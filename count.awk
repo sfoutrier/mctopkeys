@@ -5,6 +5,6 @@
 END {
   for(i in r)
   {
-    print i" "r[i]
+    print r[i]"\t"i
   }
 }

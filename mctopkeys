@@ -42,4 +42,4 @@ tcpdump -c $packets -i $iface -X -ns $maxlen $dumpstring \
  | awk --non-decimal-data -f parsedump.awk \
  | sed -nr "s/$regex/\1/gp" \
  | awk -f count.awk \
- | sort -nk 2
+ | sort -n
