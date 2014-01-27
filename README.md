@@ -35,5 +35,5 @@ ARGUMENTS:
 * -e: specify a filtering regex. for instance if you want to filter only the 4 first chars of the keys:
       -e '^(.{5}).*$'
       if you want chars until a separator (let say @)
-      -e '^([^@]*)@.*$
+      -e '^([^@]*)@.*$'
 
