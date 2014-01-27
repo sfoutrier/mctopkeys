@@ -1,0 +1,45 @@
+#!/bin/bash
+
+while getopts  "p:t:m:o:c:e:v" flag
+do
+  case $flag in
+  p) port="$OPTARG";;
+  t) minttl="$OPTARG";;
+  m) maxlen=($OPTARG + 72);; # 72 is the initial position of the key
+  o) opcode="$OPTARG";;
+  c) packets="$OPTARG";;
+  i) iface="$OPTARG";;
+  e) regex="$OPTARG";;
+  ?) echo "Usage mctopkeys [-p port] [-t minttl] [-m maxlen] [-o opcode] [-c packets count] [-i interface]"
+  esac
+done
+
+if [ -z $port ]; then
+  port='11211'
+fi
+if [ -z $maxKeyLen ]; then
+  maxlen='0'
+fi
+if [ -z $packets ]; then
+  packets='1000'
+fi
+if [ -z $iface ]; then
+  iface='eth0'
+fi
+
+dumpstring="tcp[2:2] = $port and tcp[20] = 0x80"
+if [ ! -z $opcode ]; then
+  dumpstring="$dumpstring and tcp[21] = $opcode"
+fi
+if [ ! -z $minttl ]; then
+  dumpstring="$dumpstring and tcp[48:4] > $minttl"
+fi
+if [ -z $regex ]; then
+  regex='^(.*)$'
+fi
+
+tcpdump -c $packets -i $iface -X -ns $maxlen $dumpstring \
+ | awk --non-decimal-data -f parsedump.awk \
+ | sed -nr "s/$regex/\1/gp" \
+ | awk -f count.awk \
+ | sort -nk 2
