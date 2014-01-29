@@ -19,6 +19,6 @@ END {
   exec = getTime() - start;
   for(i in r)
   {
-    print r[i]"\t"(r[i]/exec)"\t"i
+    printf("%d\t%.2f\t%s\n", r[i], r[i]/exec, i)
   }
 }
