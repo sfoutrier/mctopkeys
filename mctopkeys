@@ -27,16 +27,18 @@ if [ -z $iface ]; then
   iface='eth0'
 fi
 
-dumpstring="tcp[2:2] = $port "
+dumpstring="tcp[2:2] = $port and tcp[(tcp[12]>>2)] = 0x81 "
 if [ ! -z $opcode ]; then
-  dumpstring="$dumpstring and tcp[21] = $opcode"
+  dumpstring="$dumpstring and tcp[(tcp[12]>>2) + 1] = $opcode"
 fi
 if [ ! -z $minttl ]; then
-  dumpstring="$dumpstring and tcp[48:4] > $minttl"
+  dumpstring="$dumpstring and tcp[(tcp[12]>>2) + 24:4] > $minttl"
 fi
 if [ -z $regex ]; then
   regex='^(.*)$'
 fi
+
+echo tcpdump -c $packets -i $iface -X -ns $maxlen $dumpstring
 
 tcpdump -c $packets -i $iface -X -ns $maxlen $dumpstring \
  | awk --non-decimal-data -f parsedump.awk \
