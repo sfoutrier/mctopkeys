@@ -27,7 +27,7 @@ if [ -z $iface ]; then
   iface='eth0'
 fi
 
-dumpstring="tcp[2:2] = $port and tcp[(tcp[12]>>2)] = 0x81 "
+dumpstring="tcp[2:2] = $port and tcp[(tcp[12]>>2)] = 0x80 "
 if [ ! -z $opcode ]; then
   dumpstring="$dumpstring and tcp[(tcp[12]>>2) + 1] = $opcode"
 fi
