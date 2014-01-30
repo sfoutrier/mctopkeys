@@ -3,8 +3,11 @@ func flushKey()
 {
   if(buffer != 0)
   {
-    key = substr(buffer, 0, keylen);
+    key = substr(buffer, 0, keyLen);
     buffer = 0;
+    keyPos = -1;
+    keyLenPos = -1;
+    extraLenPos = -1;
   }
 }
 
@@ -18,19 +21,42 @@ BEGIN{
   else if($1 ~ /0x[0-9]+:/)
   {
     pos = (substr($1,0,6) + 0);
+
+    # capturing the begin of the tcp payload
     if(pos == 32)
     {
-      keylen = ("0x"$7) + 0;
-      keypos = ("0x"substr($8,0,2)) + 64;
-      offset = keypos % 16;
+      # 4 * tcp header size + IP header size
+      tcpBegin = ("0x"substr($2,0,1) + 0) * 4 + 20;
+      keyLenPos = tcpBegin + 2;
+      keyLenOffset = keyLenPos % 16;
+      extraLenPos = tcpBegin + 4;
+      extraLenOffset = extraLenPos % 16;
     }
-    else if(pos == keypos - offset)
-      buffer = substr($NF, offset+1)
-    else if(buffer != 0 && pos > keypos)
+
+    if(pos >= 32)
     {
-      buffer = buffer $NF;
-      if(length(buffer) >= keylen)
-        flushKey();
+      # get the key length
+      if(pos == keyLenPos - keyLenOffset)
+      {
+        keyLen = ("0x" $(2 + keyLenOffset / 2)) + 0;
+      }
+      # get the extra length
+      if(pos == extraLenPos - extraLenOffset)
+      {
+        extraLen = ("0x"substr($(2 + extraLenOffset / 2),0,2)) + 0;
+        keyPos = tcpBegin + 24 + extraLen;
+        keyOffset = keyPos % 16;
+      }
+      if(pos == keyPos - keyOffset)
+      {
+        buffer = substr($NF, keyOffset+1)
+      }
+      else if(buffer != 0)
+      {
+        buffer = buffer $NF;
+        if(length(buffer) >= keyLen)
+          flushKey();
+      }
     }
   }
 
