@@ -1,6 +1,6 @@
 #!/bin/bash
 
-while getopts  "p:t:m:o:c:e:vh?" flag
+while getopts  "i:p:t:m:o:c:e:vh?" flag
 do
   case $flag in
   p) port="$OPTARG";;
